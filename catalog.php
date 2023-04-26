@@ -247,7 +247,7 @@
         <div class="filter__overlay">
           <div class="filter__inner">
             <!-- <div class="filter"> -->
-  <form action="?" method="POST" autocomplete="on">
+  <form action="?" method="GET" autocomplete="on">
     <fieldset>
       <h3>Цена за сутки,<span>&#8381;</span></h3>
       <label for="from">
@@ -262,13 +262,13 @@
     </fieldset>
     <fieldset>
       <h3>Площадь</h3>
-      <?$square = DB::FA("SELECT * FROM rooms");
+      <?$square = DB::FA("SELECT * FROM rooms LIMIT 6");
       foreach($square as $k => $sq):
       ?>
-      <label for="square<?=$k?>">
-        <input type="checkbox" name="square[]" id="square<?=$k?>">
+      <label for="square<?=$k+1?>">
+        <input type="checkbox" name="square[]" id="square<?=$k+1?>">
         <span></span>
-        <?=$sq["square"]?>
+        <?=$sq["square"]?> м2
       </label>
         <?endforeach;?>
     </fieldset>
@@ -276,8 +276,8 @@
       <h3>Оснащение номера</h3>
         <?$icons = DB::FA("SELECT * FROM icons LIMIT 5");
         foreach($icons as $k => $ic):?>
-      <label for="icon<?=$k?>">
-        <input type="checkbox" name="icons[]" id="icon<?=$k?>">
+      <label for="<?=$ic["class"]?><?=$k+1?>">
+        <input type="checkbox" name="icons[]" id="<?=$ic["class"]?><?=$k+1?>">
         <span></span>
         <?=$ic["name"]?>
       </label>
@@ -304,6 +304,10 @@
             $rooms = DB::FA("SELECT * FROM rooms ORDER BY square " . $_REQUEST["order"]);
           elseif(($_REQUEST["filter"] == "price")):
             $rooms = DB::FA("SELECT * FROM rooms ORDER BY price " . $_REQUEST["order"]);
+          elseif($_REQUEST["pricefrom"] || $_REQUEST["priceto"]):
+            $pricefrom = $_REQUEST["pricefrom"];
+            $priceto = $_REQUEST["priceto"];
+            $rooms = DB::FA("SELECT * FROM rooms WHERE price >= $pricefrom AND price <= $priceto");
           else:
             $rooms = DB::FA("SELECT * FROM rooms ORDER BY price ASC");
           endif;
@@ -325,7 +329,7 @@
               <h3><?=$ro["name"]?></h3>
               <ul class="offer__description">
                 <li class="offer__description-item">Размеры (ШхГхВ) - <?=$ro["scale"]?></li>
-                <li class="offer__description-item">Площадь - <?=$ro["square"]?></li>
+                <li class="offer__description-item">Площадь - <?=$ro["square"]?> м2</li>
                 <li class="offer__description-item offer__description-item--flex">
                   Оснащение номера
                   <?foreach($icons as $k => $ic):?>
@@ -338,7 +342,7 @@
                   <?endforeach;?>
                 </li>
                 <li class="offer__description-item">
-                  Цена за сутки: <b><?=$ro["price"]?></b>
+                  Цена за сутки: <b><?=$ro["price"]?>&#8381;</b>
                 </li>
               </ul>
               <a class="button offer__button" href="#">
